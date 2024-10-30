@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Shelter Insurance Skin
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      10-30-2024-2
 // @description  Re-skin InsurGroup demo with Shelter Insurance Skin
 // @author       Alex Basin & Gur Talmor
 // @match        https://b2b-noram.tryciam.onewelcome.io/*
