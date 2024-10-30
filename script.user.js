@@ -8,8 +8,8 @@
 // @match        https://insurgroup-noram.tryciam.onewelcome.io/insurgroup/products/*
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
 // @grant        GM_addStyle
-// @downloadURL  https://github.com/logictester/tampermonkey/raw/main/script.user.js
-// @updateURL    https://github.com/logictester/tampermonkey/raw/main/script.user.js
+// @downloadURL  https://github.com/logictester/tampermonkey/raw/refs/heads/main/script.user.js
+// @updateURL    https://github.com/logictester/tampermonkey/raw/refs/heads/main/script.user.js
 // ==/UserScript==
 
 (function() {
