@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         Shelter Insurance Skin
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      0.5
 // @description  Re-skin InsurGroup demo with Shelter Insurance Skin
 // @author       Alex Basin & Gur Talmor
 // @match        https://b2b-noram.tryciam.onewelcome.io/*
-// @match        https://insurgroup-noram.tryciam.onewelcome.io/insurgroup/products/*
+// @match        https://insurgroup-noram.tryciam.onewelcome.io/*
+// @match        https://b2b-workforceusaws.platform.ritm.iwelcome.com/*
+// @match        https://www.mailinator.com/*
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
 // @grant        GM_addStyle
 // @downloadURL  https://github.com/logictester/tampermonkey/raw/refs/heads/main/script.user.js
@@ -86,15 +88,56 @@
             }
 
             // Password Reset page
-            const passwordResetRegex = /^https:\/\/b2b-noram\.tryciam\.onewelcome\.io\/(?:[^\/]+\/)*passwordreset\//;
+            // URL lloks like: https://b2b-noram.tryciam.onewelcome.io/workforce/passwordreset/ - the workforce can be other things as well - but the passwordreset has to be there
+            const passwordResetRegex = /^https:\/\/b2b-noram\.tryciam\.onewelcome\.io\/[^\/]+\/passwordreset\/?/;
 
             if (passwordResetRegex.test(currentURL)) {
                 passwordResetPage(newBaseColor, newLogo);
             }
 
-            // Logout page
+            // Consumers page
+            const consumersRegex = /^https:\/\/insurgroup-noram\.tryciam\.onewelcome\.io\/insurgroup\/products\/?$/;
+
+            if (consumersRegex.test(currentURL)) {
+                consumersPage(newBaseColor, newLogo);
+            }
+
+            // RITM pages
+            //URL looks like: https://b2b-workforceusaws.platform.ritm.iwelcome.com/*
+            // can contain just / or more at the end
+            const ritmRegex = /^https:\/\/b2b-workforceusaws\.platform\.ritm\.iwelcome\.com\/?/;
+
+            if (ritmRegex.test(currentURL)) {
+                ritmPage(newBaseColor, newLogo, newPageTitle);
+            }
+
+            // Consumer application pages
+            //URL looks like: https://insurgroup-noram.tryciam.onewelcome.io/insurlife/login/ - insurlife can be other things as well, like insurcar or roadhelp like https://insurgroup-noram.tryciam.onewelcome.io/roadhelp/login/ 
+            const consumerAppRegex = /^https:\/\/insurgroup-noram\.tryciam\.onewelcome\.io\/[^\/]+\/login\/?$/;
+
+            if (consumerAppRegex.test(currentURL)) {
+                consumerAppPage(targetStringToReplace, newPageTitle);
+            }
+
+            // Invitation - Mailinator page
+            //URL looks like: https://www.mailinator.com/
+            const mailinatorRegex = /^https:\/\/www\.mailinator\.com\/?/;
+
+            if (mailinatorRegex.test(currentURL)) {
+                mailinatorPage(newBaseColor, newLogo, targetStringToReplace, newPageTitle);
+
+                document.addEventListener('DOMContentLoaded', () => {
+                    // Your mailinatorPage function call here
+                    mailinatorPage(newBaseColor, newLogo, targetStringToReplace, newPageTitle);
+                });
+            }
 
             // Registration page
+            const registrationRegex = /^https:\/\/b2b-noram\.tryciam\.onewelcome\.io\/[^\/]+\/registration\/?/;
+
+            if (registrationRegex.test(currentURL)) {
+                registrationPage(newBaseColor, newLogo, targetStringToReplace, newPageTitle);
+            }
 
             // Clear the interval once the script has run
             clearInterval(checkPageLoad);
@@ -128,25 +171,14 @@
         console.log("loginPage function running!");
 
         replaceLogo(newLogo);
-
-        // Change color of the "Forgot password?" text and its underline
         styleElementsByText('Forgot password?', baseColor);
-
-        // Change color of the "Go back" text and its underline
         styleElementsByText('Go back', baseColor);
-
         styleElementsByText('EN', baseColor);
-
         styleLiElementsBySelectedState(baseColor);
-
         replaceText('InsurGroup-ID', 'Shelter-ID *');
-
         changeClassColor('Mui-focused', baseColor);
-
-        changePseudoElementBorderColor('MuiInput-underline', baseColor);
-
+        changePseudoElementBorderColorByClassName('MuiInput-underline', baseColor);
         changeActiveButtonSvgFillColor(baseColor);
-
         changeIdColor('toPwdResetSocialButton', baseColor);
         changeIdColor('backToPortalSocialButton', baseColor);
 
@@ -165,13 +197,228 @@
 
     function passwordResetPage(baseColor, newLogo) {
         console.log("passwordResetPage running!");
+
         replaceLogo(newLogo);
         styleElementsByText('EN', baseColor);
         changeIdBackgroundColor('pwd_reset_user_identification_step-submit-Submit-button_container', baseColor);
         styleElementsByText('Help', baseColor);
         styleElementsByText('Password reset', baseColor, false);
-        changeClassColor('Mui-focused', baseColor);
-        changePseudoElementBorderColor('MuiInput-underline', baseColor);
+
+        // Get the textfield element
+        const textfield = document.querySelector('#pwd_reset_user_identification_step-TEXT_FIELD-email-input_container-input');
+        const parentElement = textfield.parentElement;
+        const parentElementClasses = parentElement.classList;
+
+        // For each class, change the border-bottom-color using changePseudoElementBorderColorByClassName
+        parentElementClasses.forEach(className => {
+            changePseudoElementBorderColorByClassName(className, baseColor);
+        });
+
+        // Get the label element
+        const labelElementContainer = document.querySelector('#pwd_reset_user_identification_step-TEXT_FIELD-email-input_container');
+        const labelElement = labelElementContainer.querySelector('label');
+        const labelElementClasses = labelElement.classList;
+
+        // For each class, change the color using changeClassColor
+        labelElementClasses.forEach(className => {
+            changeClassColor(className, baseColor);
+        });
+    }
+    
+    function consumersPage(baseColor, newLogo) {
+        console.log("consumersPage running!");
+        
+        // This actually replaces all of the text colors on the page since the same class is used for all of them
+        const backLinkButton = document.getElementById('products-REDIRECT_BUTTON-backToPortalButton-redirectButton');
+        const backLinkButtonClasses = backLinkButton.classList;
+
+        // For each class, change the color using changeClassColor
+        backLinkButtonClasses.forEach(className => {
+            changeClassColor(className, baseColor);
+        });
+    }
+
+    function ritmPage(baseColor, newLogo, newString) {
+        console.log("ritmPage running!");
+    
+        changeClassBackgroundColor('lang-selector', baseColor);
+        changeClassBackgroundColor('MuiLinearProgress-barColorPrimary', baseColor);
+    
+        const body = document.querySelector('body');
+    
+        // Function to update the --brand variable
+        const updateBrandColor = () => {
+            //const currentBrandColor = getComputedStyle(body).getPropertyValue('--brand').trim();    
+            body.style.setProperty('--brand', baseColor);
+            
+            //const currentBrandListHoverColor = getComputedStyle(body).getPropertyValue('--brand-c-hover').trim();
+            const newColorWithAlpha = hexToRGBA(baseColor, 0.2);
+            body.style.setProperty('--brand-c-hover', newColorWithAlpha);
+            body.style.setProperty('--brand-hover', newColorWithAlpha);
+            body.style.setProperty('--brand-c-selected', newColorWithAlpha);
+            body.style.setProperty('--brand-selected', newColorWithAlpha);
+        };
+    
+        // Create a MutationObserver to watch for changes to the style attribute
+        const observer = new MutationObserver((mutationsList, observer) => {
+            for (const mutation of mutationsList) {
+                if (mutation.attributeName === 'style') {   
+                    updateBrandColor();
+                }
+            }
+        });
+    
+        // Start observing the body element for attribute changes
+        observer.observe(body, { attributes: true, attributeFilter: ['style'] });
+    
+        // In case the style attribute is already set, call updateBrandColor immediately
+        updateBrandColor();
+
+        // Change the logo - logo has an alt named "RITM"
+        const logoElement = document.querySelector('img[alt="RITM"]');
+        logoElement.src = newLogo.url;
+        logoElement.style.width = '50px';
+
+        // Grab the next element after the logo (the logo is within an anchor tag - so right after the anchor tag) this is the company name
+        const anchorElement = logoElement.parentElement;
+        const companyNameElement = anchorElement.nextElementSibling;
+        companyNameElement.innerHTML = newString;
+
+    }
+
+    function consumerAppPage(textToReplace, newText) {
+        console.log("consumerAppPage running!");
+
+        const elementToReplaceTextIn = document.getElementById('loginLinkfooter.insurgroup');
+
+        // replace just the text in this element
+        let currentText = elementToReplaceTextIn.innerText;
+        elementToReplaceTextIn.innerText = currentText.replace(textToReplace, newText);
+    }
+
+    function mailinatorPage(baseColor, newLogo, textToReplace, newText) {
+        console.log("mailinatorPage running!");
+
+
+        const observer = new MutationObserver((mutationsList) => {
+            for (let mutation of mutationsList) {
+                // Check if new nodes have been added
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    mutation.addedNodes.forEach(node => {
+                        // If the added node is a <td> element
+                        if (node.nodeName === 'TD' || node.nodeName === 'H3') {
+                            if (node.innerText.includes(textToReplace)) {
+                                node.innerText = node.innerText.replace(textToReplace, newText);
+                            }
+                        }
+                        // If the added node contains child nodes (e.g., a table row)
+                        else if (node.querySelectorAll) {
+                            const tds = node.querySelectorAll('td');
+                            tds.forEach(td => {
+                                if (td.innerText.includes(textToReplace)) {
+                                    td.innerText = td.innerText.replace(textToReplace, newText);
+                                }
+                            });
+
+                            const h3s = node.querySelectorAll('h3');
+                            h3s.forEach(h3 => {
+                                console.log('h3:', h3);
+                                if (h3.innerText.includes(textToReplace)) {
+                                    h3.innerText = h3.innerText.replace(textToReplace, newText);
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        document.querySelectorAll('td').forEach(td => {
+            if (td.innerText.includes(textToReplace)) {
+                td.innerText = td.innerText.replace(textToReplace, newText);
+            }
+        });
+
+        document.querySelectorAll('h3').forEach(h3 => {
+            console.log('h3:', h3);
+            if (h3.innerText.includes(textToReplace)) {
+                h3.innerText = h3.innerText.replace(textToReplace, newText);
+            }
+        });
+    }
+
+    function registrationPage(baseColor, newLogo, textToReplace, newText) {
+        console.log("registrationPage running!");
+    
+        // Create an observer instance linked to the callback function
+        const observer = new MutationObserver(function(mutationsList, observer) {
+            // Update the color of the text of the form title
+            const spanTextElement = document.getElementById('registration_step3-FORM_TITLE-FormTitle-formTitle_container-h1');
+            if (spanTextElement) {    
+                spanTextElement.style.setProperty('color', baseColor, 'important');
+            }
+
+            // Update the color of the "password tips" link
+            const passwordTipsLink = document.getElementById('registration_step3-REDIRECT-redirect-link');
+            if (passwordTipsLink) {
+                passwordTipsLink.style.setProperty('color', baseColor, 'important');
+            }
+
+            // Update the textfield colors
+            // Get the textfield element
+            const textfield = document.getElementById('newPasswordId');
+            const parentElement = textfield.parentElement;
+            const beforeSibling = parentElement.previousElementSibling;
+
+            const textfieldClasses = beforeSibling.classList;
+            const specialClass = `${textfieldClasses[0]}.${textfieldClasses[1]}`;
+            console.log('registrationPage->specialClass:', specialClass);
+
+            changeClassColor(specialClass, baseColor);
+
+            const anotherTextfieldClasses = parentElement.classList;
+
+            // For each class, change the border-bottom-color using changePseudoElementBorderColorByClassName
+            // need to change the classes with :hover as well
+            anotherTextfieldClasses.forEach(className => {
+                changePseudoElementBorderColorByClassName(className, baseColor);
+            });
+
+            // Get the label element
+            const labelElementContainer = textfield.parentElement;
+            const labelElementClasses = labelElementContainer.classList;
+
+            // For each class, change the color using changeClassColor
+            labelElementClasses.forEach(className => {
+                changeClassColor(className, baseColor);
+            });
+
+            // Update the colors of the SVGs
+            // Get the head element
+            const headElement = document.querySelector('head');
+            console.log('registrationPage->headElement:', headElement);
+
+            // get the style element from head with the "data-meta" property of "MuiSvgIcon"
+            const styleElement = headElement.querySelector('style[data-meta="MuiSvgIcon"]');
+            console.log('registrationPage->styleElement:', styleElement);
+            let childNodeData = styleElement.childNodes[0].data;
+            console.log('registrationPage->childNode:', childNodeData);
+            // print the type of the childNodeData
+            console.log('registrationPage->childNodeData type:', typeof childNodeData);
+
+            // childNodeData is a string, replace the color in the string
+            childNodeData = childNodeData.replace(/#A0639A/g, baseColor);
+            
+
+            // Change the color of the Continue button
+            const continueButton = document.getElementById('registration_step3-submit-Submit-button_container');
+            continueButton.style.setProperty('background-color', baseColor, 'important');
+        });
+    
+        // Start observing the document body for added nodes
+        observer.observe(document.body, { childList: true, subtree: true });
     }
 
     /* ********************
@@ -181,11 +428,9 @@
         console.log("replaceTitle called");
         // Use a loop to continuously set the title if something is overriding it
 
-        console.log("Current title:", document.title);
         // Check and replace the title if it includes the target string
         if (document.title.includes(titleToReplace)) {
             document.title = document.title.replace(titleToReplace, newTitle);
-            console.log("Tab title successfully changed to: " + document.title);
         }
     }
 
@@ -193,8 +438,6 @@
     function replaceLogo(newLogo) {
         console.log("replaceLogo called");
         let logoElement = document.querySelector('.logoContainer img');
-
-        console.log("logoElement:", logoElement);
 
         if (logoElement) {
             logoElement.src = newLogo.url;
@@ -212,21 +455,20 @@
 
         if (!logoElement) {
             logoElement = document.getElementById('workflow-header-logo');
-            console.log('Found new element?:', logoElement);
 
-            const allClasses = logoElement.classList;
-            console.log('All classes:', allClasses);
+            if (logoElement) {
+                const allClasses = logoElement.classList;
+                
+                for (let i = 0; i < allClasses.length; i++) {
+                    // for each class, get the CSS rules
+                    const rules = window.getComputedStyle(logoElement, '.' + allClasses[i]);
 
-            for (let i = 0; i < allClasses.length; i++) {
-                // for each class, get the CSS rules
-                const rules = window.getComputedStyle(logoElement, '.' + allClasses[i]);
-
-                // replace background if exists
-                if (rules.backgroundImage) {
-                    console.log('Found background image:', rules.backgroundImage);
-                    logoElement.style.backgroundImage = `url("${newLogo.url}")`;
-                    logoElement.style.position = 'fixed';
-                    logoElement.style.marginLeft = '255px';
+                    // replace background if exists
+                    if (rules.backgroundImage) {
+                        logoElement.style.backgroundImage = `url("${newLogo.url}")`;
+                        logoElement.style.position = 'fixed';
+                        logoElement.style.marginLeft = '255px';
+                    }
                 }
             }
         }
@@ -277,9 +519,6 @@
             console.log(`No elements found with text: "${text}"`);
         }
         for (let i = 0; i < result.snapshotLength; i++) {
-
-            console.log(`working on element ${i}:`, element);
-
             const element = result.snapshotItem(i);
 
             // Override text color with !important
@@ -290,6 +529,16 @@
     function changeClassColor(className, color) {
         // Create a CSS style rule
         var css = '.' + className + ' { color: ' + color + ' !important; }';
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        style.appendChild(document.createTextNode(css));
+        // Append the style to the document head
+        document.head.appendChild(style);
+    }
+
+    function changeClassBackgroundColor(className, color) {
+        // Create a CSS style rule
+        var css = '.' + className + ' { background-color: ' + color + ' !important; }';
         var style = document.createElement('style');
         style.type = 'text/css';
         style.appendChild(document.createTextNode(css));
@@ -340,7 +589,6 @@
 
         // Add the new favicon to the document head
         document.head.appendChild(newFavicon);
-        console.log("Favicon replaced with: " + newFaviconUrl);
     }
 
     function changeIdColor(idName, color) {
@@ -364,6 +612,7 @@
     }
 
     function replaceText(fromText, toText) {
+        console.log('replaceText called');
         const xpath = `//*[normalize-space(text())='${fromText}']`;
         const result = document.evaluate(
             xpath,
@@ -372,6 +621,7 @@
             XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
             null
         );
+
         if (result.snapshotLength === 0) {
             console.log(`No elements found with text: "${fromText}"`);
         }
@@ -436,7 +686,7 @@
     }
 
     // This is used to capture the underlines colors of the text fields when selected
-    function changePseudoElementBorderColor(classSubstring, color) {
+    function changePseudoElementBorderColorByClassName(classSubstring, color) {
         // Create a CSS style rule
         var css = '[class*="' + classSubstring + '"]::after { border-bottom-color: ' + color + ' !important; }';
         var style = document.createElement('style');
