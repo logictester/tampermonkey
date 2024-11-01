@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Shelter Insurance Skin
 // @namespace    http://tampermonkey.net/
-// @version      0.10
+// @version      0.11
 // @description  Re-skin InsurGroup demo with Shelter Insurance Skin
 // @author       Alex Basin & Gur Talmor
 // @match        https://b2b-noram.tryciam.onewelcome.io/*
@@ -239,9 +239,15 @@
         updateBrandColor();
 
         const logoElement = document.querySelector('img[alt="RITM"]');
-        if (logoElement) {
+        if (logoElement !== null) {
             logoElement.src = newLogo.url;
             logoElement.style.width = '50px';
+        } else {
+            const logoElement2 = document.querySelector('img');
+            if (logoElement2 !== null) {
+                logoElement2.src = newLogo.url;
+                logoElement2.style.width = '50px';
+            }
         }
 
         const companyNameElement = logoElement.parentElement.nextElementSibling;
@@ -385,7 +391,7 @@
     function replaceLogo(newLogo) {
         console.log("replaceLogo called");
         let logoElement = document.querySelector('.logoContainer img');
-        if (logoElement) {
+        if (logoElement !== null) {
             logoElement.src = newLogo.url;
             if (window.getComputedStyle(logoElement).width == "232.5px") {
                 logoElement.style.width = "20%";
@@ -398,7 +404,7 @@
             }
         } else {
             logoElement = document.getElementById('workflow-header-logo');
-            if (logoElement) {
+            if (logoElement !== null) {
                 logoElement.style.backgroundImage = `url("${newLogo.url}")`;
                 logoElement.style.position = 'fixed';
                 logoElement.style.marginLeft = '255px';
