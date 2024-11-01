@@ -113,8 +113,8 @@
             }
 
             // Consumer application pages
-            //URL looks like: https://insurgroup-noram.tryciam.onewelcome.io/insurlife/login/ - insurlife can be other things as well, like insurcar or roadhelp like https://insurgroup-noram.tryciam.onewelcome.io/roadhelp/login/ 
-            const consumerAppRegex = /^https:\/\/insurgroup-noram\.tryciam\.onewelcome\.io\/[^\/]+\/?$/;
+            //URL looks like: https://insurgroup-noram.tryciam.onewelcome.io/insurlife/ - insurlife can be other things as well, like insurcar or roadhelp like https://insurgroup-noram.tryciam.onewelcome.io/roadhelp/login/ 
+            const consumerAppRegex = /^https:\/\/insurgroup-noram\.tryciam\.onewelcome\.io\/[^\/]+\/?/;
 
             if (consumerAppRegex.test(currentURL)) {
                 consumerAppPage(targetStringToReplace, newPageTitle, currentURL, consumerLogos);
@@ -303,23 +303,17 @@
 
         const elementToReplaceTextIn = document.getElementById('loginLinkfooter.insurgroup');
 
-        // replace just the text in this element
-        let currentText = elementToReplaceTextIn.innerText;
-        elementToReplaceTextIn.innerText = currentText.replace(textToReplace, newText);
+        if (elementToReplaceTextIn) {
+            // replace just the text in this element
+            let currentText = elementToReplaceTextIn.innerText;
+            elementToReplaceTextIn.innerText = currentText.replace(textToReplace, newText);
+        }
 
         if (url.includes('insurcar')) {
             console.log("InsureCar page detected!");
             console.log('URL:', consumerLogos.insurcar);
             replaceImageInPlaceUsingAltName("InsurCar logo placeholder", consumerLogos.insurcar);
             replaceImageInPlaceUsingAltName("logo", consumerLogos.insurcar);
-
-            const logoSecondaryDiv = document.getElementById('workflow-header-logo');
-            console.log('logoSecondaryDiv:', logoSecondaryDiv);
-            if (logoSecondaryDiv) {
-                console.log('logoSecondaryDiv FOUND:', logoSecondaryDiv);
-                const logoClass = logoSecondaryDiv.classList[0];
-                logoClass.style.background = `url("${consumerLogos.insurcar}")`;
-            }
         }
 
         const observer = new MutationObserver((mutationsList) => {
@@ -332,8 +326,17 @@
                             replaceImageInPlaceUsingAltName("InsurCar logo placeholder", consumerLogos.insurcar);
                             replaceImageInPlaceUsingAltName("logo", consumerLogos.insurcar);
                         }
+
+                        const logoSecondaryDiv = document.getElementById('workflow-header-logo');
+                        console.log('logoSecondaryDiv:', logoSecondaryDiv);
+                        if (logoSecondaryDiv) {
+                            logoSecondaryDiv.style.background = `url("${consumerLogos.insurcar}")`;
+                            logoSecondaryDiv.style.backgroundSize = 'contain'; // Ensure the image scales properly
+                            logoSecondaryDiv.style.backgroundRepeat = 'no-repeat'; // Prevent tiling
+                        }
                     });
                 }
+                
             }
         });
 
@@ -522,7 +525,9 @@
         console.log("replaceImageInPlaceUsingAltName called");
         const imageElement = document.querySelector(`[alt="${imageAltName}"]`);
         console.log('imageElement:', imageElement);
-        imageElement.src = newImageURL;
+        if (imageElement) {
+            imageElement.src = newImageURL;
+        }
     }
 
     // Function to find and style elements by exact text content
