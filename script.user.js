@@ -116,8 +116,10 @@
             //URL looks like: https://insurgroup-noram.tryciam.onewelcome.io/insurlife/ - insurlife can be other things as well, like insurcar or roadhelp like https://insurgroup-noram.tryciam.onewelcome.io/roadhelp/login/ 
             const consumerAppRegex = /^https:\/\/insurgroup-noram\.tryciam\.onewelcome\.io\/[^\/]+\/?/;
 
-            if (consumerAppRegex.test(currentURL)) {
+            if (consumerAppRegex.test(currentURL) && !currentURL.includes('insurgroup/login')) {
                 consumerAppPage(targetStringToReplace, newPageTitle, currentURL, consumerLogos);
+            } else if (consumerAppRegex.test(currentURL) && currentURL.includes('insurgroup/login')) {
+                supportPage(newBaseColor, newLogo);
             }
 
             // Invitation - Mailinator page
@@ -248,6 +250,15 @@
         backLinkButtonClasses.forEach(className => {
             changeClassColor(className, baseColor);
         });
+
+        //replaceImageInPlaceUsingAltName("InsurGroup logo placeholder", newLogo.url);
+        const logoSecondaryDiv = document.getElementById('workflow-header-logo');
+        console.log('logoSecondaryDiv:', logoSecondaryDiv);
+        if (logoSecondaryDiv) {
+            logoSecondaryDiv.style.background = `url("${consumerLogos.insurcar}")`;
+            logoSecondaryDiv.style.backgroundSize = 'contain'; // Ensure the image scales properly
+            logoSecondaryDiv.style.backgroundRepeat = 'no-repeat'; // Prevent tiling
+        }
     }
 
     function ritmPage(baseColor, newLogo, newString) {
@@ -314,6 +325,10 @@
             console.log('URL:', consumerLogos.insurcar);
             replaceImageInPlaceUsingAltName("InsurCar logo placeholder", consumerLogos.insurcar);
             replaceImageInPlaceUsingAltName("logo", consumerLogos.insurcar);
+        } else if (url.includes('insurlife')) {
+            console.log("InsureLife page detected!");
+            replaceImageInPlaceUsingAltName("InsurLife logo placeholder", consumerLogos.insurlife);
+            replaceImageInPlaceUsingAltName("logo", consumerLogos.insurlife);
         }
 
         const observer = new MutationObserver((mutationsList) => {
@@ -466,6 +481,30 @@
     
         // Start observing the document body for added nodes
         observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    function supportPage(baseColor, newLogo) {
+        console.log("supportPage running!");
+
+        // This page is almost identical to the login page, so we can reuse the loginPage function
+        loginPage(baseColor, newLogo);
+
+        const loginButton = document.getElementById('consumerSocialButton');
+
+        if (loginButton) {
+            // Override button styles with !important
+            loginButton.style.setProperty('background-color', baseColor, 'important');
+            loginButton.style.setProperty('color', '#FFFFFF', 'important');
+
+            // Change the image in the button
+            // Find the first image element within the button
+            const imageElement = loginButton.querySelector('img');
+            if (imageElement) {
+                imageElement.src = newLogo.url;
+            }
+        } else {
+            console.log('Login button not found');
+        }
     }
 
     /* ********************
