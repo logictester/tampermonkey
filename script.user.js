@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         Shelter Insurance Skin
 // @namespace    http://tampermonkey.net/
-// @version      0.7
+// @version      0.8
 // @description  Re-skin InsurGroup demo with Shelter Insurance Skin
 // @author       Alex Basin & Gur Talmor
 // @match        https://b2b-noram.tryciam.onewelcome.io/*
 // @match        https://insurgroup-noram.tryciam.onewelcome.io/*
 // @match        https://b2b-workforceusaws.platform.ritm.iwelcome.com/*
 // @match        https://www.mailinator.com/*
+// @match        https://insurgroup-insurgroupusaws.platform.ritm.iwelcome.com/*
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
 // @grant        GM_addStyle
 // @downloadURL  https://github.com/logictester/tampermonkey/raw/refs/heads/main/script.user.js
@@ -105,14 +106,16 @@
 
             // RITM pages
             //URL looks like: https://b2b-workforceusaws.platform.ritm.iwelcome.com/*
+            // could also be like this: https://insurgroup-insurgroupusaws.platform.ritm.iwelcome.com/admin/
             // can contain just / or more at the end
             const ritmRegex = /^https:\/\/b2b-workforceusaws\.platform\.ritm\.iwelcome\.com\/?/;
+            const ritmRegex2 = /^https:\/\/insurgroup-insurgroupusaws\.platform\.ritm\.iwelcome\.com\/?/;
 
-            if (ritmRegex.test(currentURL)) {
+            if (ritmRegex.test(currentURL) || ritmRegex2.test(currentURL)) {
                 ritmPage(newBaseColor, newLogo, newPageTitle);
             }
 
-            // Consumer application pages
+            // Consumer brands pages
             //URL looks like: https://insurgroup-noram.tryciam.onewelcome.io/insurlife/ - insurlife can be other things as well, like insurcar or roadhelp like https://insurgroup-noram.tryciam.onewelcome.io/roadhelp/login/ 
             const consumerAppRegex = /^https:\/\/insurgroup-noram\.tryciam\.onewelcome\.io\/[^\/]+\/?/;
 
