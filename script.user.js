@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Shelter Insurance Skin
 // @namespace    http://tampermonkey.net/
-// @version      0.9
+// @version      0.10
 // @description  Re-skin InsurGroup demo with Shelter Insurance Skin
 // @author       Alex Basin & Gur Talmor
 // @match        https://b2b-noram.tryciam.onewelcome.io/*
@@ -217,7 +217,6 @@
         console.log("ritmPage running!");
         changeClassBackgroundColor('lang-selector', baseColor);
         changeClassBackgroundColor('MuiLinearProgress-barColorPrimary', baseColor);
-
         const body = document.querySelector('body');
         if (!body) {
             return;
@@ -229,9 +228,11 @@
             body.style.setProperty('--brand-hover', newColorWithAlpha);
             body.style.setProperty('--brand-c-selected', newColorWithAlpha);
             body.style.setProperty('--brand-selected', newColorWithAlpha);
+
+            observer.disconnect();
         };
 
-        const observer = new MutationObserver(() => {
+        let observer = new MutationObserver(() => {
             updateBrandColor();
         });
         observer.observe(body, { attributes: true, attributeFilter: ['style'] });
@@ -244,7 +245,9 @@
         }
 
         const companyNameElement = logoElement.parentElement.nextElementSibling;
-        companyNameElement.innerHTML = newString;
+        if (companyNameElement) {
+            companyNameElement.innerHTML = newString;
+        }
     }
 
     function consumerAppPage(textToReplace, newText, url, consumerLogos) {
