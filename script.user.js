@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Shelter Insurance Skin
 // @namespace    http://tampermonkey.net/
-// @version      0.5
+// @version      0.6
 // @description  Re-skin InsurGroup demo with Shelter Insurance Skin
 // @author       Alex Basin & Gur Talmor
 // @match        https://b2b-noram.tryciam.onewelcome.io/*
@@ -47,6 +47,8 @@
     const newFaviconURL = "https://productpod-shelter-deployment.tryciam.onewelcome.io/portal/login/ui/resources/theme/img/shelter-insurance-favicon.svg";
     const shouldReplaceBackgroundImages = false;
     const backgroundImages = {'https://b2b-noram.tryciam.onewelcome.io/workforce/login/ui/resources/theme/img/insurgroup-background.png': 'https://www.frommers.com/system/media_items/attachments/000/869/453/s980/Travel_Insurance.webp?1663185729'}
+    const consumerLogos = {"insurcar": "https://productpod-shelter-deployment.tryciam.onewelcome.io/portal/login/ui/resources/theme/img/shelter-icar.png",
+                            "insurlife": "https://productpod-shelter-deployment.tryciam.onewelcome.io/portal/login/ui/resources/theme/img/shelter-ilife.png"}
 
     /* ********************
     **    MAIN LOGIC     **
@@ -67,7 +69,6 @@
             const observer = new MutationObserver(() => {
                 replaceTitle(targetStringToReplace, newPageTitle);
                 replaceFavicon(newFaviconURL);
-                passwordResetPage(newBaseColor, newLogo);
             });
 
             // Observe changes to the document's title
@@ -113,10 +114,10 @@
 
             // Consumer application pages
             //URL looks like: https://insurgroup-noram.tryciam.onewelcome.io/insurlife/login/ - insurlife can be other things as well, like insurcar or roadhelp like https://insurgroup-noram.tryciam.onewelcome.io/roadhelp/login/ 
-            const consumerAppRegex = /^https:\/\/insurgroup-noram\.tryciam\.onewelcome\.io\/[^\/]+\/login\/?$/;
+            const consumerAppRegex = /^https:\/\/insurgroup-noram\.tryciam\.onewelcome\.io\/[^\/]+\/?$/;
 
             if (consumerAppRegex.test(currentURL)) {
-                consumerAppPage(targetStringToReplace, newPageTitle);
+                consumerAppPage(targetStringToReplace, newPageTitle, currentURL, consumerLogos);
             }
 
             // Invitation - Mailinator page
@@ -155,11 +156,11 @@
         changeIdBackgroundColor('supportSocialButton', baseColor);
         changeIdBackgroundColor('consumerSocialButton', baseColor);
 
-        replaceImageInPlace("employee", newPageButtonURLs.employee);
-        replaceImageInPlace("partner", newPageButtonURLs.partner);
-        replaceImageInPlace("support", newPageButtonURLs.support);
-        replaceImageInPlace("consumer", newPageButtonURLs.consumer);
-        replaceImageInPlace("restButton", newPageButtonURLs.restButton);
+        replaceImageInPlaceUsingAltName("employee", newPageButtonURLs.employee);
+        replaceImageInPlaceUsingAltName("partner", newPageButtonURLs.partner);
+        replaceImageInPlaceUsingAltName("support", newPageButtonURLs.support);
+        replaceImageInPlaceUsingAltName("consumer", newPageButtonURLs.consumer);
+        replaceImageInPlaceUsingAltName("restButton", newPageButtonURLs.restButton);
 
         styleElementsByText("Privacy Policy", baseColor, false);
         styleElementsByText("Terms of Service", baseColor, false);
@@ -198,31 +199,42 @@
     function passwordResetPage(baseColor, newLogo) {
         console.log("passwordResetPage running!");
 
-        replaceLogo(newLogo);
-        styleElementsByText('EN', baseColor);
-        changeIdBackgroundColor('pwd_reset_user_identification_step-submit-Submit-button_container', baseColor);
-        styleElementsByText('Help', baseColor);
-        styleElementsByText('Password reset', baseColor, false);
+        const observer = new MutationObserver((mutationsList) => {
+            for (let mutation of mutationsList) {
+                // Check if new nodes have been added
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    mutation.addedNodes.forEach(node => {
+                        replaceLogo(newLogo);
+                        styleElementsByText('EN', baseColor);
+                        changeIdBackgroundColor('pwd_reset_user_identification_step-submit-Submit-button_container', baseColor);
+                        styleElementsByText('Help', baseColor);
+                        styleElementsByText('Password reset', baseColor, false);
 
-        // Get the textfield element
-        const textfield = document.querySelector('#pwd_reset_user_identification_step-TEXT_FIELD-email-input_container-input');
-        const parentElement = textfield.parentElement;
-        const parentElementClasses = parentElement.classList;
+                        // Get the textfield element
+                        const textfield = document.querySelector('#pwd_reset_user_identification_step-TEXT_FIELD-email-input_container-input');
+                        const parentElement = textfield.parentElement;
+                        const parentElementClasses = parentElement.classList;
 
-        // For each class, change the border-bottom-color using changePseudoElementBorderColorByClassName
-        parentElementClasses.forEach(className => {
-            changePseudoElementBorderColorByClassName(className, baseColor);
+                        // For each class, change the border-bottom-color using changePseudoElementBorderColorByClassName
+                        parentElementClasses.forEach(className => {
+                            changePseudoElementBorderColorByClassName(className, baseColor);
+                        });
+
+                        // Get the label element
+                        const labelElementContainer = document.querySelector('#pwd_reset_user_identification_step-TEXT_FIELD-email-input_container');
+                        const labelElement = labelElementContainer.querySelector('label');
+                        const labelElementClasses = labelElement.classList;
+
+                        // For each class, change the color using changeClassColor
+                        labelElementClasses.forEach(className => {
+                            changeClassColor(className, baseColor);
+                        });
+                    });
+                }
+            }
         });
 
-        // Get the label element
-        const labelElementContainer = document.querySelector('#pwd_reset_user_identification_step-TEXT_FIELD-email-input_container');
-        const labelElement = labelElementContainer.querySelector('label');
-        const labelElementClasses = labelElement.classList;
-
-        // For each class, change the color using changeClassColor
-        labelElementClasses.forEach(className => {
-            changeClassColor(className, baseColor);
-        });
+        observer.observe(document.body, { childList: true, subtree: true });
     }
     
     function consumersPage(baseColor, newLogo) {
@@ -286,7 +298,7 @@
 
     }
 
-    function consumerAppPage(textToReplace, newText) {
+    function consumerAppPage(textToReplace, newText, url, consumerLogos) {
         console.log("consumerAppPage running!");
 
         const elementToReplaceTextIn = document.getElementById('loginLinkfooter.insurgroup');
@@ -294,11 +306,43 @@
         // replace just the text in this element
         let currentText = elementToReplaceTextIn.innerText;
         elementToReplaceTextIn.innerText = currentText.replace(textToReplace, newText);
+
+        if (url.includes('insurcar')) {
+            console.log("InsureCar page detected!");
+            console.log('URL:', consumerLogos.insurcar);
+            replaceImageInPlaceUsingAltName("InsurCar logo placeholder", consumerLogos.insurcar);
+            replaceImageInPlaceUsingAltName("logo", consumerLogos.insurcar);
+
+            const logoSecondaryDiv = document.getElementById('workflow-header-logo');
+            console.log('logoSecondaryDiv:', logoSecondaryDiv);
+            if (logoSecondaryDiv) {
+                console.log('logoSecondaryDiv FOUND:', logoSecondaryDiv);
+                const logoClass = logoSecondaryDiv.classList[0];
+                logoClass.style.background = `url("${consumerLogos.insurcar}")`;
+            }
+        }
+
+        const observer = new MutationObserver((mutationsList) => {
+            for (let mutation of mutationsList) {
+                // Check if new nodes have been added
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    mutation.addedNodes.forEach(node => {
+                        if (url.includes('insurcar')) {
+                            console.log("InsureCar page detected!");
+                            replaceImageInPlaceUsingAltName("InsurCar logo placeholder", consumerLogos.insurcar);
+                            replaceImageInPlaceUsingAltName("logo", consumerLogos.insurcar);
+                        }
+                    });
+                }
+            }
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+
     }
 
     function mailinatorPage(baseColor, newLogo, textToReplace, newText) {
         console.log("mailinatorPage running!");
-
 
         const observer = new MutationObserver((mutationsList) => {
             for (let mutation of mutationsList) {
@@ -474,8 +518,10 @@
         }
     }
 
-    function replaceImageInPlace(imageAltName, newImageURL) {
+    function replaceImageInPlaceUsingAltName(imageAltName, newImageURL) {
+        console.log("replaceImageInPlaceUsingAltName called");
         const imageElement = document.querySelector(`[alt="${imageAltName}"]`);
+        console.log('imageElement:', imageElement);
         imageElement.src = newImageURL;
     }
 
