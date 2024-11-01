@@ -219,6 +219,9 @@
         changeClassBackgroundColor('MuiLinearProgress-barColorPrimary', baseColor);
 
         const body = document.querySelector('body');
+        if (!body) {
+            return;
+        }
         const updateBrandColor = () => {
             body.style.setProperty('--brand', baseColor);
             const newColorWithAlpha = hexToRGBA(baseColor, 0.2);
@@ -437,6 +440,9 @@
 
     function changeClassBackgroundColor(className, color) {
         const css = '.' + className + ' { background-color: ' + color + ' !important; }';
+        if (!css) {
+            return;
+        }
         const style = document.createElement('style');
         style.type = 'text/css';
         style.appendChild(document.createTextNode(css));
